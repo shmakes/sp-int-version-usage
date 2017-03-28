@@ -1,0 +1,18 @@
+{
+  "name": "spieversionusage",
+  "version": "1.0.0",
+  "description": "Find the SPIE version used by every company.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Steve Schmechel",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "async": "^2.1.5",
+    "commander": "^2.9.0",
+    "request": "^2.81.0",
+    "request-promise": "^4.2.0",
+    "request-promise-native": "^1.0.3"
+  }
+}
