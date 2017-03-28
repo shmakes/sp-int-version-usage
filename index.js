@@ -65,6 +65,7 @@ request({
                             let entry = {
                                 'CompanyName': c.CompanyName,
                                 'APIKey': c.Settings.APIKey,
+                                'HostUrl': c.Settings.HostUrl,
                                 'Enabled': enabled,
                                 'APIVer': resSpie ? resSpie.IntegrationEngineVersion : enabled ? defVer : 'n/a'
                             };
