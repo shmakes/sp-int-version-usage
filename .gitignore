@@ -39,3 +39,4 @@ jspm_packages
 # Vim artifacts
 *~
 *.swp
+*.txt

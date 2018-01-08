@@ -67,7 +67,7 @@ request({
                                 'APIKey': c.Settings.APIKey,
                                 'HostUrl': c.Settings.HostUrl,
                                 'Enabled': enabled,
-                                'CompanyVer': c.CompanyVersionNumber,
+                                'CompanyVer': company.CompanyVersionNumber,
                                 'APIVer': resSpie ? resSpie.IntegrationEngineVersion : enabled ? defVer : 'n/a'
                             };
                             output.push(entry);
