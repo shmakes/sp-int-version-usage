@@ -1,6 +1,7 @@
 const program = require('commander');
 const async = require('async');
 const request = require('request-promise');
+//process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 program
   .version('0.0.1')
@@ -86,7 +87,14 @@ request({
                 if (err) { console.log(err); }
                 console.log('Finished');
                 //console.log(output);
-                output.forEach(item => console.log(item))
+                //output.forEach(item => console.log(item))
+                output.forEach(item => console.log(
+                      '"' + item.CompanyName + '",' 
+                    + '"' + item.APIKey + '",' 
+                    + '"' + item.HostUrl + '",' 
+                    + '"' + item.Enabled + '",'
+                    + '"' + item.CompanyVer + '",' 
+                    + '"' + item.APIVer + '"'));
             });
         })
         .catch(function (errLogin) {
