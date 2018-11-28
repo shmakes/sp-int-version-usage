@@ -53,30 +53,43 @@ request({
                   json: true,
                   headers: { 'Authorization-Token': auth, 'Company-Version': company.CompanyVersionNumber }
                 };
+                let companyDetailUri = program.apiUri + 'service/api/Company/' + company.Id + '?$select=CompanyGUID,IsProduction';
+                let companyDetailOptions = {
+                  method: 'GET',
+                  url: companyDetailUri,
+                  json: true,
+                  headers: { 'Authorization-Token': auth, 'Company-Version': company.CompanyVersionNumber }
+                };
                 request(selectOptions)
                     .then(function (resSelect) {
                         let c = resSelect.d.results;
-                        request({
-                            url: program.spieUri + 'CompanyConfig/GetConfig/' + c.Settings.APIKey,
-                            json: true,
-                            headers: spieHeaders
-                        })
-                        .then(function (resSpie) {
-                            let enabled = c.Settings.Integration || false;
-                            let entry = {
-                                'CompanyName': c.CompanyName,
-                                'APIKey': c.Settings.APIKey,
-                                'HostUrl': c.Settings.HostUrl,
-                                'Enabled': enabled,
-                                'CompanyVer': company.CompanyVersionNumber,
-                                'APIVer': resSpie ? resSpie.IntegrationEngineVersion : enabled ? defVer : 'n/a'
-                            };
-                            output.push(entry);
-                            callback();
-                        })
-                        .catch (function (errSpie) {
-                            callback('Error in SPIE request: ' + errSpie);
-                        });
+                        request(companyDetailOptions)
+                            .then(function (detailSelect){
+                                let cdetails = detailSelect.d.results;
+                                request({
+                                    url: program.spieUri + 'CompanyConfig/GetConfig/' + c.Settings.APIKey,
+                                    json: true,
+                                    headers: spieHeaders
+                                })
+                                .then(function (resSpie) {
+                                    let enabled = c.Settings.Integration || false;
+                                    let entry = {
+                                        'CompanyName': c.CompanyName,
+                                        'APIKey': c.Settings.APIKey,
+                                        'HostUrl': c.Settings.HostUrl,
+                                        'Enabled': enabled,
+                                        'CompanyVer': company.CompanyVersionNumber,
+                                        'APIVer': resSpie ? resSpie.IntegrationEngineVersion : enabled ? defVer : 'n/a',
+                                        'CompanyGuid': cdetails.CompanyGUID,
+                                        'IsProduction': cdetails.IsProduction
+                                    };
+                                    output.push(entry);
+                                    callback();
+                                })
+                                .catch (function (errSpie) {
+                                    callback('Error in SPIE request: ' + errSpie);
+                                });
+                            })
                     })
                     .catch (function (errSelect) {
                         console.log('Error in company request: ' + errSelect);
@@ -94,7 +107,9 @@ request({
                     + '"' + item.HostUrl + '",' 
                     + '"' + item.Enabled + '",'
                     + '"' + item.CompanyVer + '",' 
-                    + '"' + item.APIVer + '"'));
+                    + '"' + item.APIVer + '",' 
+                    + '"' + item.CompanyGuid + '",' 
+                    + '"' + item.IsProduction + '"'));
             });
         })
         .catch(function (errLogin) {
