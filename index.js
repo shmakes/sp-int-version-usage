@@ -72,21 +72,50 @@ request({
                                     headers: spieHeaders
                                 })
                                 .then(function (resSpie) {
-                                    let enabled = c.Settings.Integration || false;
-                                    let entry = {
-                                        'CompanyName': c.CompanyName,
-                                        'APIKey': c.Settings.APIKey,
-                                        'HostUrl': c.Settings.HostUrl,
-                                        'Enabled': enabled,
-                                        'CompanyVer': company.CompanyVersionNumber,
-                                        'APIVer': resSpie ? resSpie.IntegrationEngineVersion : enabled ? defVer : 'n/a',
-                                        'CompanyGuid': cdetails.CompanyGUID,
-                                        'IsProduction': cdetails.IsProduction
-                                    };
-                                    output.push(entry);
-                                    callback();
+                                    request({
+                                        url: program.apiUri + 'service/api/IntegrationSetting?$filter=KeyName eq NetSuiteIntegrationSetting',
+                                        json: true,
+                                        headers: { 'Authorization-Token': auth, 'Company-Version': company.CompanyVersionNumber }
+                                    })
+                                    .then(function (resSpieSettings) {
+                                        let laborOpt = 'n/a';
+                                        let nsUrl = 'n/a';
+                                        let restletUrl = 'n/a';
+                                        let compId = 'n/a';
+                                        if (resSpieSettings && resSpieSettings.d.results.length > 0) {
+                                            try {
+                                            jsonObj = JSON.parse(resSpieSettings.d.results[0].Value);
+                                            } catch {
+                                                console.log('Error Deserialializing JSON');
+                                            }
+                                            laborOpt = jsonObj.LaborOption || 'missing';
+                                            nsUrl = jsonObj.BaseNetSuiteUrl || 'missing';
+                                            restletUrl = jsonObj.RestletUrl || 'missing';
+                                            compId = jsonObj.CompId || 'missing';
+                                        }
+                                        let enabled = c.Settings.Integration || false;
+                                        let entry = {
+                                            'CompanyName': c.CompanyName,
+                                            'APIKey': c.Settings.APIKey,
+                                            'HostUrl': c.Settings.HostUrl,
+                                            'Enabled': enabled,
+                                            'CompanyVer': company.CompanyVersionNumber,
+                                            'APIVer': resSpie ? resSpie.IntegrationEngineVersion : enabled ? defVer : 'n/a',
+                                            'CompanyGuid': cdetails.CompanyGUID,
+                                            'IsProduction': cdetails.IsProduction,
+                                            'LaborOption': laborOpt,
+                                            'BaseNetSuiteUrl': nsUrl,
+                                            'RestletUrl': restletUrl,
+                                            'CompId': compId
+                                        };
+                                        output.push(entry);
+                                        callback();
+                                    })
+                                    .catch (function (errSpie) {
+                                        callback('Error in Integration Setting request: ' + errSpieSet);
+                                    });
                                 })
-                                .catch (function (errSpie) {
+                                .catch (function (errSpieSet) {
                                     callback('Error in SPIE request: ' + errSpie);
                                 });
                             })
@@ -101,6 +130,7 @@ request({
                 console.log('Finished');
                 //console.log(output);
                 //output.forEach(item => console.log(item))
+                console.log('"Company","ApiKey","SP Host","Integration","SP Ver","Int Ver","Comp Guid","IsProd","NS LabOpt","NS Base","NS Restlet","NS Comp ID"');
                 output.forEach(item => console.log(
                       '"' + item.CompanyName + '",' 
                     + '"' + item.APIKey + '",' 
@@ -109,7 +139,11 @@ request({
                     + '"' + item.CompanyVer + '",' 
                     + '"' + item.APIVer + '",' 
                     + '"' + item.CompanyGuid + '",' 
-                    + '"' + item.IsProduction + '"'));
+                    + '"' + item.IsProduction + '",'
+                    + '"' + item.LaborOption + '",'
+                    + '"' + item.BaseNetSuiteUrl + '",'
+                    + '"' + item.RestletUrl + '",'
+                    + '"' + item.CompId + '"'));
             });
         })
         .catch(function (errLogin) {
